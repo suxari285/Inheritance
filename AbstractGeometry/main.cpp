@@ -1,3 +1,4 @@
+#include<Windows.H>
 #include<iostream>
 
 using namespace std;
@@ -55,14 +56,32 @@ public:
 	}
 	void draw() const override
 	{
-		for (int i = 0; i < side; i++)
+		/*for (int i = 0; i < side; i++)
 		{
 			for (int i = 0; i < side; i++)
 			{
 				cout << "* ";
 			}
 			cout << endl;
-		}
+		}*/
+
+		HWND hwnd = GetConsoleWindow(); //1)ѕолучаем окно консоли
+		HDC hdc = GetDC(hwnd); //получаем контекст окна консоли
+		//3)создаЄм чем и на чЄм мы будем рисовать
+		HPEN hPen = CreatePen(PS_SOLID, 5, Colour::Red);//контур фигуры
+		HBRUSH hBrush = CreateSolidBrush(Colour::Red); //заливка фигуры
+
+		//вышесозданный инструмент нужно выбрать
+		SelectObject(hdc, hPen);
+		SelectObject(hdc, hBrush);
+		
+		//–исуем фигуру
+		Rectangle(hdc, 300, 300, 500, 500);
+
+		//удал€ем инструменты дл€ того что бы освободить ресурсы
+		DeleteObject(hBrush);
+		DeleteObject(hPen);
+		ReleaseDC(hwnd, hdc);
 	}
 
 	void info()const override
@@ -79,7 +98,7 @@ void main()
 	//Shape shape = Colour::Red;
 
 	Square square(5, Colour::Red);
-	//cout << "—торона квадрата: " << square.get_side() << endl;
+	//cout << "—торона квадрата: " << square.get_side() << endl;`
 	//cout << "ѕлощадь фигуры: " << square.get_area() << endl;
 	//cout << "ѕлощадь фигуры: " << square.get_perimetr() << endl;
 	//square.draw();

@@ -46,7 +46,6 @@ public:
 	{
 		this->age = age;
 	}
-	//				Constructors:
 	Human(const std::string& last_name, const std::string& first_name, int age)
 	{
 		set_last_name(last_name);
@@ -62,11 +61,10 @@ public:
 	}
 	virtual std::ostream& info(std::ostream& os)const
 	{
-		//return os << last_name << " " << first_name << " " << age;
 		os.width(11);
-		os << std::left;//задаем выравнивание по левому кураю
+		os << std::left;
 		os << std::string(typeid(*this).name() + 6) + ":";
-		os.width(LAST_NAME_WIDTH);	//задаем ширину вывода, т.е., сколько знакопозиций будет занимать следующее выводимое значение
+		os.width(LAST_NAME_WIDTH);	
 		os << last_name;
 		os.width(FIRST_NAME_WIDTH);
 		os << first_name;
@@ -88,11 +86,18 @@ public:
 };
 int Human::count = 0;
 
-@@ - 95, 27 + 100, 32 @@
+std::ostream& operator<<(std::ostream& os, const Human& obj)
+{
+	return obj.info(os);
+	//obj.info();
+	//return os << obj.get_last_name() << " " << obj.get_first_name() << " " << obj.get_age();
+}
+//std::ofstream& operator<<(std::ofstream& ofs, const Human& obj)
+//{
 //	obj.write(ofs);
 //	return ofs;
 //}
-std::ifstream & operator>>(std::ifstream & ifs, Human & obj)
+std::ifstream& operator>>(std::ifstream& ifs, Human& obj)
 {
 	obj.read(ifs);
 	return ifs;
@@ -111,7 +116,6 @@ public:
 	{
 		this->speciality = speciality;
 	}
-	//				Constructors:
 	AcademyMember
 	(
 		const std::string& last_name, const std::string& first_name, int age,
@@ -121,23 +125,38 @@ public:
 		set_speciality(speciality);
 		cout << "AMConstructor:\t" << this << endl;
 	}
-	@@ - 141, 69 + 151, 82 @@
+	~AcademyMember()
+	{
+		cout << "AMDestructor:\t" << this << endl;
+	}
+	std::ostream& info(std::ostream& os)const override
+	{
+		//return Human::info(os) << " " << speciality;
+		Human::info(os);
+		os.width(SPECIALITY_WIDTH);
+		os << speciality;
+		return os;
+		//Human::info(os);
+		//return os << speciality << endl;
+	}
+	std::ofstream& write(std::ofstream& ofs)const override
+	{
+		Human::write(ofs);
 		ofs << " " << speciality;
-	return ofs;
-}
-std::ifstream& read(std::ifstream& ifs)override
-{
-	Human::read(ifs);
-	char buffer[SPECIALITY_WIDTH + 1] = {};
-	//https://legacy.cplusplus.com/reference/istream/istream/read/
-	ifs.read(buffer, SPECIALITY_WIDTH);
-	//cout << buffer << endl;
-	for (int i = SPECIALITY_WIDTH - 1; buffer[i] == ' '; i--)buffer[i] = 0;
-	while (buffer[0] == ' ')
-		for (int i = 0; buffer[i]; i++)buffer[i] = buffer[i + 1];
-	this->speciality = buffer;
-	return ifs;
-}
+		return ofs;
+	}
+	std::ifstream& read(std::ifstream& ifs)override
+	{
+		Human::read(ifs);
+		char buffer[SPECIALITY_WIDTH + 1] = {};
+		ifs.read(buffer, SPECIALITY_WIDTH);
+		//cout << buffer << endl;
+		for (int i = SPECIALITY_WIDTH - 1; buffer[i] == ' '; i--)buffer[i] = 0;
+		while (buffer[0] == ' ')
+			for (int i = 0; buffer[i]; i++)buffer[i] = buffer[i + 1];
+		this->speciality = buffer;
+		return ifs;
+	}
 };
 
 class Student :public AcademyMember
@@ -173,8 +192,6 @@ public:
 	{
 		this->attendance = attendance;
 	}
-
-	//				Constructors:
 	Student
 	(
 		const std::string& last_name, const std::string& first_name, int age,
@@ -204,8 +221,13 @@ public:
 		os.width(ATTENDANCE_WIDTH);
 		os << attendance;
 		return os;
-		@@ - 219, 27 + 242, 33 @@
-			ofs << " " << group << " " << rating << " " << attendance;
+		//AcademyMember::info(os);
+		//return os << group << " " << rating << " " << attendance << endl;
+	}
+	std::ofstream& write(std::ofstream& ofs)const override
+	{
+		AcademyMember::write(ofs);
+		ofs << " " << group << " " << rating << " " << attendance;
 		return ofs;
 	}
 	std::ifstream& read(std::ifstream& ifs)override
@@ -228,7 +250,6 @@ public:
 	{
 		this->experience = experience;
 	}
-	//			Constructors:
 	Teacher
 	(
 		const std::string& last_name, const std::string& first_name, int age,
@@ -238,8 +259,23 @@ public:
 	{
 		set_experience(experience);
 		cout << "TConstrcutor:\t" << this << endl;
-		@@ - 262, 27 + 291, 33 @@
-			ofs << " " << experience;
+	}
+	~Teacher()
+	{
+		cout << "TDestructor:\t" << this << endl;
+	}
+
+	//			Methods:
+	std::ostream& info(std::ostream& os)const override
+	{
+		return AcademyMember::info(os) << experience;
+		//AcademyMember::info(os);
+		//return os << experience << endl;
+	}
+	std::ofstream& write(std::ofstream& ofs)const override
+	{
+		AcademyMember::write(ofs);
+		ofs << " " << experience;
 		return ofs;
 	}
 	std::ifstream& read(std::ifstream& ifs)override
@@ -261,7 +297,6 @@ public:
 	{
 		this->subject = subject;
 	}
-	//			Constructors:
 	Graduate
 	(
 		const std::string& last_name, const std::string& first_name, int age,
@@ -272,8 +307,21 @@ public:
 	{
 		set_subject(subject);
 		cout << "GConstructor:\t" << this << endl;
-		@@ - 303, 27 + 338, 33 @@
-			ofs << " " << subject;
+	}
+	~Graduate()
+	{
+		cout << "GDestructor:\t" << this << endl;
+	}
+	std::ostream& info(std::ostream& os)const override
+	{
+		return Student::info(os) << subject;
+		//Student::info(os);
+		//return os << subject << endl;
+	}
+	std::ofstream& write(std::ofstream& ofs)const override
+	{
+		Student::write(ofs);
+		ofs << " " << subject;
 		return ofs;
 	}
 	std::ifstream& read(std::ifstream& ifs)
@@ -286,9 +334,6 @@ public:
 
 void Print(Human* group[], const int n)
 {
-	// __vfptr (Virtual Functions Pointers) - Таблица указателей на виртуальные функции.
-	//Specialization - уточнение
-	//Downcast - приведение базового типа к дочернему.
 	for (int i = 0; i < n; i++)
 	{
 		//group[i]->info();
@@ -306,47 +351,55 @@ void Save(Human* group[], const int n, const std::string& filename)
 	fout.close();
 	std::string cmd = "notepad ";
 	cmd += filename;
-	@@ - 348, 88 + 389, 90 @@
-		//1) Вычисляем количество объектов в файле:
-		n = 0;	//Обнуляем размер массива
-	std::string buffer;
-	while (!fin.eof())
+	system(cmd.c_str());
+}
+Human* Factory(const char type[])
+{
+	Human* human = nullptr;
+	if (strstr(type, "Student"))	human = new Student("", "", 0, "", "", 0, 0);
+	if (strstr(type, "Graduate"))	human = new Graduate("", "", 0, "", "", 0, 0, "");
+	if (strstr(type, "Teacher"))	human = new Teacher("", "", 0, "", 0);
+	return human;
+}
+Human** Load(const std::string& filename, int& n)
+{
+	Human** group = nullptr;
+	std::ifstream fin(filename);
+	if (fin.is_open())
+	{
+		n = 0;
+		std::string buffer;
 		while (!fin.eof())
 		{
 			std::getline(fin, buffer);
 			if (buffer.size() == 0)continue;
 			n++;
 		}
-	cout << n << endl;
-	//2) Выделяем память под массив, в который будут сохраняться объекты из файла:
-	group = new Human * [n] {};
-
-	//3) Возвращаемся в начало файла для того чтобы загрузить из него объекты:
-	cout << fin.tellg() << endl;
-	fin.clear();
-	fin.seekg(0);
-	cout << fin.tellg() << endl;
-
-	//4) Загружаем объекты из файла:
-	for (int i = 0; !fin.eof(); i++)
-	{
-		std::getline(fin, buffer, ':');
-		if (buffer.size() == 0)continue;
-		group[i] = Factory(buffer.c_str());
-		if (group[i])fin >> *group[i];
-		else i--;
+		cout << n << endl;
+		group = new Human * [n] {};
+		cout << fin.tellg() << endl;
+		fin.clear();
+		fin.seekg(0);
+		cout << fin.tellg() << endl;
+		for (int i = 0; !fin.eof(); i++)
+		{
+			std::getline(fin, buffer, ':');
+			if (buffer.size() == 0)continue;
+			group[i] = Factory(buffer.c_str());
+			if (group[i])fin >> *group[i];
+			else i--;
+		}
 	}
-}
 	else
 	{
 		std::cerr << "Error: file not found" << endl;
-		}
-		fin.close();
-		return group;
+	}
+	fin.close();
+	return group;
 }
-
 //#define INHERITANCE
 //#define POLYMORPHISM
+//#define LOADGROUPFROMFILE
 
 void main()
 {
@@ -367,18 +420,9 @@ void main()
 #endif // INHERITANCE
 
 #ifdef POLYMORPHISM
-	//Polymorphism (многоформенность: poly-много, morphis-форма)
-/*
-	Runtime polymorhism:
-		1. Base class pointers;
-		2. Virtual functions (methods);
-*/
-
-//Generalization - Обобщение
-//Upcast - преобразование дочернего объекта к базовому типу.
 	Human* group[] =
 	{
-		new Student("Кондратенко", "Георний", 18, "РПО", "P_418", 97, 98),
+		new Student("Кондратенко", "Георгий", 18, "РПО", "P_418", 97, 98),
 		new Teacher("Stanne", "Michael", 55, "Vocals", 40),
 		new Student("Щербаков", "Илья", 15, "РПО", "P_418", 100, 99.9),
 		new Teacher("Henriksson", "Matrin", 50, "Bass guitar", 40),
@@ -388,13 +432,17 @@ void main()
 	Print(group, sizeof(group) / sizeof(group[0]));
 	Save(group, sizeof(group) / sizeof(group[0]), "P_418.txt");
 
-	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
+	for (int i = 0; i < sizeof(group) / sizeof(group[ 0]); i++)
 	{
 		delete group[i];
 	}
 	cout << "Количество участников группы: " << Human::get_count() << endl;
 #endif // POLYMORPHISM
+#ifdef LOADGROUPFROMFILE
 
 	int n = 0;
 	Human** group = Load("P_418.txt", n);
 	Print(group, n);
+
+#endif // DEBUG
+}
