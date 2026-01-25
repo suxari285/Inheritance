@@ -8,7 +8,7 @@ namespace Geometry
 	enum Color
 	{
 		Black = 0x00000000,
-		Red = 0x000000FF,
+		Red = 0x000000FF,	
 		Green = 0x0000FF00,
 		Blue = 0x00FF0000,
 		Yellow = 0x0000FFFF,
@@ -29,7 +29,7 @@ namespace Geometry
 		static const int MIN_SIZE = 20;
 		static const int MAX_SIZE = 500;
 	protected:
-		Color color;
+		Color color;	//Цвет фигуры
 		int start_x;
 		int start_y;
 		int line_width;
@@ -48,30 +48,42 @@ namespace Geometry
 		}
 		void set_start_x(int start_x)
 		{
-			start_x > MAX_START_X ? start_x = MAX_START_X : (start_x < MIN_START_X ? start_x = MIN_START_X : start_x = start_x);
 			//if (start_x < MIN_START_X)start_x = MIN_START_X;
 			//if (start_x > MAX_START_X)start_x = MAX_START_X;
-			this->start_x = start_x;
+			//this->start_x = start_x;
+			this->start_x =
+				start_x < MIN_START_X ? MIN_START_X :
+				start_x > MAX_START_X ? MAX_START_X :
+				start_x;
 		}
 		void set_start_y(int start_y)
 		{
-			start_y > MAX_START_Y ? start_y = MAX_START_Y : (start_y < MIN_START_Y ? start_y = MIN_START_Y : start_y = start_y);
 			//if (start_y < MIN_START_Y)start_y = MIN_START_Y;
 			//if (start_y > MAX_START_Y)start_y = MAX_START_Y;
-			this->start_y = start_y;
+			//this->start_y = start_y;
+			this->start_y =
+				start_y < MIN_START_Y ? MIN_START_Y :
+				start_y > MAX_START_Y ? MAX_START_Y :
+				start_y;
 		}
 		void set_line_width(int line_width)
 		{
-			line_width > MAX_LINE_WIDTH ? line_width = MAX_LINE_WIDTH : (line_width < MIN_LINE_WIDTH ? line_width = MIN_LINE_WIDTH : line_width = line_width);
 			//if (line_width < MIN_LINE_WIDTH)line_width = MIN_LINE_WIDTH;
 			//if (line_width > MAX_LINE_WIDTH)line_width = MAX_LINE_WIDTH;
-			this->line_width = line_width;
+			//this->line_width = line_width;
+			this->line_width =
+				line_width < MIN_LINE_WIDTH ? MIN_LINE_WIDTH :
+				line_width > MAX_LINE_WIDTH ? MAX_LINE_WIDTH :
+				line_width;
 		}
 		double filter_size(double size)
 		{
+			//if (size < 20)size = 20;
+			//if (size > 800)size = 500;
+			//return size;
 			return
-				size < MIN_SIZE ? size = MIN_SIZE :
-				size > MAX_SIZE ? size = MAX_SIZE :
+				size < MIN_SIZE ? MIN_SIZE :
+				size > MAX_SIZE ? MAX_SIZE :
 				size;
 		}
 		Shape(SHAPE_TAKE_PARAMETERS) :color(color)
@@ -81,7 +93,7 @@ namespace Geometry
 			set_line_width(line_width);
 		}
 		virtual ~Shape() {}
-		virtual double get_area() const = 0;
+		virtual double get_area() const = 0;	//Pure virtual function
 		virtual double get_perimeter() const = 0;
 		virtual void draw() const = 0;
 		virtual void info() const
@@ -129,19 +141,27 @@ namespace Geometry
 				cout << endl;
 			}*/
 
-			HWND hwnd = GetConsoleWindow();
-			HDC  hdc = GetDC(hwnd);
+			HWND hwnd = GetConsoleWindow();	
+			HDC  hdc = GetDC(hwnd);	
 
+			//3) Создаем чем мы будем рисовать:
 			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);
+			HBRUSH hBrush = CreateSolidBrush(color);	
 
 			SelectObject(hdc, hPen);
 			SelectObject(hdc, hBrush);
 
 			::Rectangle(hdc, start_x, start_y, start_x + side, start_y + side);
 
+			HPEN hPenDiagonal = CreatePen(PS_SOLID, line_width, Geometry::Color::Black);
+			SelectObject(hdc, hPenDiagonal);
+
+			MoveToEx(hdc, start_x, start_y, nullptr);
+			LineTo(hdc, start_x + side, start_y + side);
+
 			DeleteObject(hBrush);
 			DeleteObject(hPen);
+			DeleteObject(hPenDiagonal);
 			ReleaseDC(hwnd, hdc);
 		}
 		void info()const override
@@ -199,12 +219,18 @@ namespace Geometry
 
 			::Rectangle(hdc, start_x, start_y, start_x + width, start_y + height);
 
+			HPEN hPenDiagonal = CreatePen(PS_SOLID, line_width,Geometry::Color::Green );
+			SelectObject(hdc, hPenDiagonal);
+
+			MoveToEx(hdc, start_x, start_y, nullptr);      
+			LineTo(hdc, start_x + width, start_y + height);
+
 			DeleteObject(hBrush);
 			DeleteObject(hPen);
+			DeleteObject(hPenDiagonal);
 			ReleaseDC(hwnd, hdc);
 		}
 	};
-
 	class Circle :public Shape
 	{
 		double radius;
@@ -217,13 +243,11 @@ namespace Geometry
 		{
 			this->radius = filter_size(radius);
 		}
-
 		Circle(double radius, SHAPE_TAKE_PARAMETERS) :Shape(SHAPE_GIVE_PARAMETERS)
 		{
 			set_radius(radius);
 		}
-		~Circle(){}
-
+		~Circle() {}
 		double get_area()const override
 		{
 			return M_PI * radius * radius;
@@ -241,7 +265,219 @@ namespace Geometry
 			SelectObject(hdc, hPen);
 			SelectObject(hdc, hBrush);
 
-			::Ellipse(hdc, start_x, start_y, start_x + 2 * radius, start_y + 2 * radius);
+			Ellipse(hdc, start_x, start_y, start_x + 2 * radius, start_y + 2 * radius);
+
+			HPEN hPenRadius = CreatePen(PS_SOLID, line_width, Geometry::Color::Purple);
+			SelectObject(hdc, hPenRadius);
+
+			// Проведём радиус от центра до правой границы круга
+			MoveToEx(hdc, start_x+radius, start_y+radius, nullptr);
+			LineTo(hdc, start_x + 2 * radius, start_y + radius);
+
+			DeleteObject(hBrush);
+			DeleteObject(hPen);
+			DeleteObject(hPenRadius);
+			ReleaseDC(hwnd, hdc);
+		}
+	};
+	class Triangle :public Shape
+	{
+	public:
+		Triangle(SHAPE_TAKE_PARAMETERS) :Shape(SHAPE_GIVE_PARAMETERS) {}
+		~Triangle() {}
+		virtual double get_height()const = 0;
+		void info()const override
+		{
+			cout << "Высота треугольника: " << get_height() << endl;
+			Shape::info();
+		}
+	};
+	class EquilateralTriangle :public Triangle
+	{
+		double side;
+	public:
+		double get_side()const
+		{
+			return side;
+		}
+		void set_side(double side)
+		{
+			this->side = filter_size(side);
+		}
+		EquilateralTriangle(double side, SHAPE_TAKE_PARAMETERS) :Triangle(SHAPE_GIVE_PARAMETERS)
+		{
+			set_side(side);
+		}
+		~EquilateralTriangle() {}
+		double get_height()const override
+		{
+			return sqrt(pow(side, 2) - pow(side / 2, 2));
+		}
+		double get_area()const override
+		{
+			return side / 2 * get_height();
+		}
+		double get_perimeter()const override
+		{
+			return 3 * side;
+		}
+		void draw()const override
+		{
+			HWND hwnd = GetConsoleWindow();
+			HDC hdc = GetDC(hwnd);
+			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
+			HBRUSH hBrush = CreateSolidBrush(color);
+			SelectObject(hdc, hPen);
+			SelectObject(hdc, hBrush);
+			POINT vertices[] =
+			{
+				{start_x + side / 2,start_y},
+				{start_x + side,start_y + get_height()},
+				{start_x,start_y + get_height()},
+			};
+			Polygon(hdc, vertices, 3);
+
+			HPEN hPenHeight = CreatePen(PS_SOLID, line_width, Geometry::Color::Red);
+			SelectObject(hdc, hPenHeight);
+
+			POINT middleBase = { start_x + side / 2, start_y + get_height() };
+			MoveToEx(hdc, vertices[0].x, vertices[0].y, nullptr);
+			LineTo(hdc, middleBase.x, middleBase.y);
+
+			DeleteObject(hBrush);
+			DeleteObject(hPen);
+			DeleteObject(hPenHeight);
+			ReleaseDC(hwnd, hdc);
+		}
+	};
+	class IsoscelesTriangle :public Triangle
+	{
+		double base;
+		double side;
+	public:
+		double get_base()const
+		{
+			return base;
+		}
+		double get_side()const
+		{
+			return side;
+		}
+		void set_base(double base)
+		{
+			this->base = filter_size(base);
+		}
+		void set_side(double side)
+		{
+			this->side = filter_size(side);
+		}
+		IsoscelesTriangle(double base, double side, SHAPE_TAKE_PARAMETERS) :Triangle(SHAPE_GIVE_PARAMETERS)
+		{
+			set_base(base);
+			set_side(side);
+		}
+		~IsoscelesTriangle() {}
+		double get_height()const override
+		{
+			return sqrt(pow(side, 2) - pow(base / 2, 2));
+		}
+		double get_area()const override
+		{
+			return base / 2 * get_height();
+		}
+		double get_perimeter()const override
+		{
+			return base + 2 * side;
+		}
+		void draw()const override
+		{
+			HWND hwnd = GetConsoleWindow();
+			HDC hdc = GetDC(hwnd);
+			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
+			HBRUSH hBrush = CreateSolidBrush(color);
+			SelectObject(hdc, hPen);
+			SelectObject(hdc, hBrush);
+
+			POINT vertices[] =
+			{
+				{start_x + base / 2, start_y},
+				{start_x + base, start_y + get_height()},
+				{start_x, start_y + get_height()},
+			};
+			Polygon(hdc, vertices, 3);
+
+			HPEN hPenHeight = CreatePen(PS_SOLID, line_width, Geometry::Color::Yellow);
+			SelectObject(hdc, hPenHeight);
+
+			POINT middleBase = { start_x + base / 2, start_y + get_height() };
+			MoveToEx(hdc, vertices[0].x, vertices[0].y, nullptr);
+			LineTo(hdc, middleBase.x, middleBase.y);
+
+			DeleteObject(hBrush);
+			DeleteObject(hPen);
+			DeleteObject(hPenHeight);
+			ReleaseDC(hwnd, hdc);
+		}
+	};
+	class RightTriangle :public Triangle
+	{
+		double cathet_1;
+		double cathet_2;
+	public:
+		double get_cathet_1()const
+		{
+			return cathet_1;
+		}
+		double get_cathet_2()const
+		{
+			return cathet_2;
+		}
+		double get_hypotenuse()const
+		{
+			return sqrt(cathet_1 * cathet_1 + cathet_2 * cathet_2);
+		}
+		void set_cathet_1(double cathet_1)
+		{
+			this->cathet_1 = filter_size(cathet_1);
+		}
+		void set_cathet_2(double cathet_2)
+		{
+			this->cathet_2 = filter_size(cathet_2);
+		}
+		RightTriangle(double cathet_1, double cathet_2, SHAPE_TAKE_PARAMETERS) :Triangle(SHAPE_GIVE_PARAMETERS)
+		{
+			set_cathet_1(cathet_1);
+			set_cathet_2(cathet_2);
+		}
+		~RightTriangle() {}
+		double get_height()const override
+		{
+			return cathet_1 * cathet_2 / get_hypotenuse();
+		}
+		double get_area()const override
+		{
+			return cathet_1 * cathet_2 / 2;
+		}
+		double get_perimeter()const override
+		{
+			return cathet_1 + cathet_2 + get_hypotenuse();
+		}
+		void draw()const override
+		{
+			HWND hwnd = GetConsoleWindow();
+			HDC hdc = GetDC(hwnd);
+			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
+			HBRUSH hBrush = CreateSolidBrush(color);
+			SelectObject(hdc, hPen);
+			SelectObject(hdc, hBrush);
+
+			POINT vertices[] =
+			{
+				{start_x, start_y},
+				{start_x, start_y + cathet_2},
+				{start_x + cathet_1, start_y + cathet_2},
+			};
+			Polygon(hdc, vertices, 3);
 
 			DeleteObject(hBrush);
 			DeleteObject(hPen);
@@ -253,7 +489,7 @@ namespace Geometry
 void main()
 {
 	setlocale(LC_ALL, "");
-	Geometry::Square square(50000, -300, -300, 1, Geometry::Color::White);
+	Geometry::Square square(600, 900, 900, 5, Geometry::Color::White);
 	/*cout << "Сторона квадрата: " << square.get_side() << endl;
 	cout << "Площадь фигуры: " << square.get_area() << endl;
 	cout << "Периметр фигуры: " << square.get_perimeter() << endl;
@@ -265,4 +501,14 @@ void main()
 
 	Geometry::Circle circle(150, 700, 300, 5, Geometry::Color::Yellow);
 	circle.info();
+
+	Geometry::EquilateralTriangle e_triangle(80, 500, 500, 5, Geometry::Color::Green);
+	e_triangle.info();
+
+	Geometry::IsoscelesTriangle iso_triangle(100, 180,	000, 400, 5, Geometry::Color::Purple);
+	iso_triangle.draw();
+
+	Geometry::RightTriangle r_triangle(100, 50, 850, 500, 5, Geometry::Color::Black);
+	r_triangle.info();
+
 }
