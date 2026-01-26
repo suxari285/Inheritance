@@ -16,8 +16,8 @@ namespace Geometry
 		White = 0x00FFFFFF
 	};
 
-#define SHAPE_TAKE_PARAMETERS	int start_x, int start_y, int line_width, Color color
-#define SHAPE_GIVE_PARAMETERS	start_x, start_y, line_width, color
+#define SHAPE_TAKE_PARAMETERS	int start_x, int start_y, int line_width, Color color, Color fill_color= Color::Black
+#define SHAPE_GIVE_PARAMETERS	start_x, start_y, line_width, color,fill_color
 	class Shape
 	{
 		static const int MIN_START_X = 100;
@@ -30,6 +30,7 @@ namespace Geometry
 		static const int MAX_SIZE = 500;
 	protected:
 		Color color;	//Цвет фигуры
+		Color fill_color;
 		int start_x;
 		int start_y;
 		int line_width;
@@ -86,7 +87,7 @@ namespace Geometry
 				size > MAX_SIZE ? MAX_SIZE :
 				size;
 		}
-		Shape(SHAPE_TAKE_PARAMETERS) :color(color)
+		Shape(SHAPE_TAKE_PARAMETERS) :color(color), fill_color(fill_color)
 		{
 			set_start_x(start_x);
 			set_start_y(start_y);
@@ -146,14 +147,14 @@ namespace Geometry
 
 			//3) Создаем чем мы будем рисовать:
 			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);	
+			HBRUSH hBrush = CreateSolidBrush(fill_color);	
 
 			SelectObject(hdc, hPen);
 			SelectObject(hdc, hBrush);
 
 			::Rectangle(hdc, start_x, start_y, start_x + side, start_y + side);
 
-			HPEN hPenDiagonal = CreatePen(PS_SOLID, line_width, Geometry::Color::Black);
+			HPEN hPenDiagonal = CreatePen(PS_SOLID, line_width, Geometry::Color::Yellow);
 			SelectObject(hdc, hPenDiagonal);
 
 			MoveToEx(hdc, start_x, start_y, nullptr);
@@ -213,7 +214,7 @@ namespace Geometry
 			HWND hwnd = GetConsoleWindow();
 			HDC hdc = GetDC(hwnd);
 			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);
+			HBRUSH hBrush = CreateSolidBrush(fill_color);
 			SelectObject(hdc, hPen);
 			SelectObject(hdc, hBrush);
 
@@ -261,7 +262,7 @@ namespace Geometry
 			HWND hwnd = GetConsoleWindow();
 			HDC hdc = GetDC(hwnd);
 			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);
+			HBRUSH hBrush = CreateSolidBrush(fill_color);
 			SelectObject(hdc, hPen);
 			SelectObject(hdc, hBrush);
 
@@ -326,7 +327,7 @@ namespace Geometry
 			HWND hwnd = GetConsoleWindow();
 			HDC hdc = GetDC(hwnd);
 			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);
+			HBRUSH hBrush = CreateSolidBrush(fill_color);
 			SelectObject(hdc, hPen);
 			SelectObject(hdc, hBrush);
 			POINT vertices[] =
@@ -394,7 +395,7 @@ namespace Geometry
 			HWND hwnd = GetConsoleWindow();
 			HDC hdc = GetDC(hwnd);
 			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);
+			HBRUSH hBrush = CreateSolidBrush(fill_color);
 			SelectObject(hdc, hPen);
 			SelectObject(hdc, hBrush);
 
@@ -467,7 +468,7 @@ namespace Geometry
 			HWND hwnd = GetConsoleWindow();
 			HDC hdc = GetDC(hwnd);
 			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);
+			HBRUSH hBrush = CreateSolidBrush(fill_color);
 			SelectObject(hdc, hPen);
 			SelectObject(hdc, hBrush);
 
@@ -489,7 +490,7 @@ namespace Geometry
 void main()
 {
 	setlocale(LC_ALL, "");
-	Geometry::Square square(600, 900, 900, 5, Geometry::Color::White);
+	Geometry::Square square(200, 900, 900, 5, Geometry::Color::Purple);
 	/*cout << "Сторона квадрата: " << square.get_side() << endl;
 	cout << "Площадь фигуры: " << square.get_area() << endl;
 	cout << "Периметр фигуры: " << square.get_perimeter() << endl;
@@ -508,7 +509,16 @@ void main()
 	Geometry::IsoscelesTriangle iso_triangle(100, 180,	000, 400, 5, Geometry::Color::Purple);
 	iso_triangle.draw();
 
-	Geometry::RightTriangle r_triangle(100, 50, 850, 500, 5, Geometry::Color::Black);
+	Geometry::RightTriangle r_triangle(100, 50, 1000, 500, 5, Geometry::Color::White);
 	r_triangle.info();
 
+	while (true)
+	{
+		square.draw();
+		rect.draw();
+		circle.draw();
+		iso_triangle.draw();
+		e_triangle.draw();
+		r_triangle.draw();
+	}
 }
