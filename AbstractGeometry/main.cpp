@@ -3,6 +3,9 @@
 #include<iostream>
 using namespace std;
 
+//#define SQUARE_FULL
+//#define EQUILATERAL_FULL
+
 namespace Geometry
 {
 	enum Color
@@ -106,6 +109,7 @@ namespace Geometry
 
 	};
 
+#ifdef SQUARE_FULL
 	class Square :public Shape
 	{
 		double side;
@@ -142,12 +146,12 @@ namespace Geometry
 				cout << endl;
 			}*/
 
-			HWND hwnd = GetConsoleWindow();	
-			HDC  hdc = GetDC(hwnd);	
+			HWND hwnd = GetConsoleWindow();
+			HDC  hdc = GetDC(hwnd);
 
 			//3) Создаем чем мы будем рисовать:
 			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(fill_color);	
+			HBRUSH hBrush = CreateSolidBrush(fill_color);
 
 			SelectObject(hdc, hPen);
 			SelectObject(hdc, hBrush);
@@ -172,6 +176,8 @@ namespace Geometry
 			Shape::info();
 		}
 	};
+#endif // SQUARE_FULL
+
 
 	class Rectangle :public Shape
 	{
@@ -232,6 +238,14 @@ namespace Geometry
 			ReleaseDC(hwnd, hdc);
 		}
 	};
+
+	class Square :public Rectangle
+	{
+	public:
+		Square(double side,SHAPE_TAKE_PARAMETERS):Rectangle(side,side,SHAPE_GIVE_PARAMETERS){}
+		~Square(){}
+	};
+
 	class Circle :public Shape
 	{
 		double radius;
@@ -293,6 +307,7 @@ namespace Geometry
 			Shape::info();
 		}
 	};
+#ifdef EQUILATERAL_FULL
 	class EquilateralTriangle :public Triangle
 	{
 		double side;
@@ -351,6 +366,8 @@ namespace Geometry
 			ReleaseDC(hwnd, hdc);
 		}
 	};
+#endif // EQUILATERAL_FULL
+
 	class IsoscelesTriangle :public Triangle
 	{
 		double base;
@@ -420,6 +437,14 @@ namespace Geometry
 			ReleaseDC(hwnd, hdc);
 		}
 	};
+
+	class EquilateralTriangle :public IsoscelesTriangle
+	{
+	public:
+		EquilateralTriangle(double side,SHAPE_TAKE_PARAMETERS):IsoscelesTriangle(side,side,SHAPE_GIVE_PARAMETERS){}
+		~EquilateralTriangle(){}
+	};
+
 	class RightTriangle :public Triangle
 	{
 		double cathet_1;
@@ -491,10 +516,6 @@ void main()
 {
 	setlocale(LC_ALL, "");
 	Geometry::Square square(200, 900, 900, 5, Geometry::Color::Purple);
-	/*cout << "Сторона квадрата: " << square.get_side() << endl;
-	cout << "Площадь фигуры: " << square.get_area() << endl;
-	cout << "Периметр фигуры: " << square.get_perimeter() << endl;
-	square.draw();*/
 	square.info();
 
 	Geometry::Rectangle rect(200, 100, 500, 300, 5, Geometry::Color::Red);
