@@ -289,6 +289,8 @@ namespace Geometry
 			int degree = 30;
 			double angle = -degree * M_PI / 180;
 			LineTo(hdc, (start_x + radius) + radius * cos(angle), (start_y + radius) + radius * sin(angle));
+			MoveToEx(hdc, start_x+radius, start_y+radius, nullptr);
+			LineTo(hdc, (start_x + radius*2) , (start_y + radius));
 
 			DeleteObject(hBrush);
 			DeleteObject(hPen);
@@ -506,6 +508,23 @@ namespace Geometry
 			};
 			Polygon(hdc, vertices, 3);
 
+			MoveToEx(hdc, start_x, start_y + cathet_2, nullptr);
+			/*double cat2_oppoiste_angle = asin(cathet_2 / get_hypotenuse())*180/M_PI;
+			double height_range_angle = 180 - cat2_oppoiste_angle - 90;
+			double height = get_height();
+			double target_x = get_height() * sin(height_range_angle * M_PI / 180);
+			double target_y = get_height() * cos(height_range_angle * M_PI / 180);
+
+			LineTo(hdc,start_x+target_x,start_y+target_y);*/
+
+			RightTriangle tri_1(cathet_1 * cathet_1 / get_hypotenuse(), get_height(), 0, 0, 0, Color::Black);
+			RightTriangle tri_2(get_height(), cathet_2 * cathet_2 / get_hypotenuse(), 0, 0, 0, Color::Black);
+			//RightTriangle tri_22(tri_2.get_height(), tri_2.cathet_2 * tri_2.cathet_2 / tri_2.get_hypotenuse(), 0, 0, 0, Color::Black);
+			//LineTo(hdc, start_x + tri_2.get_height(), start_y + tri_22.cathet_2);
+
+			LineTo(hdc, start_x + tri_2.get_height(), start_y + cathet_2 - tri_1.get_height());
+
+
 			DeleteObject(hBrush);
 			DeleteObject(hPen);
 			ReleaseDC(hwnd, hdc);
@@ -531,7 +550,7 @@ void main()
 	Geometry::IsoscelesTriangle iso_triangle(100, 180,	000, 400, 5, Geometry::Color::Purple);
 	iso_triangle.draw();
 
-	Geometry::RightTriangle r_triangle(100, 50, 1000, 500, 5, Geometry::Color::White);
+	Geometry::RightTriangle r_triangle(300, 150, 1000, 500, 5, Geometry::Color::White);
 	r_triangle.info();
 
 	while (true)
