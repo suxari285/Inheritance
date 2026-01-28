@@ -285,9 +285,10 @@ namespace Geometry
 			HPEN hPenRadius = CreatePen(PS_SOLID, line_width, Geometry::Color::Purple);
 			SelectObject(hdc, hPenRadius);
 
-			// Проведём радиус от центра до правой границы круга
 			MoveToEx(hdc, start_x+radius, start_y+radius, nullptr);
-			LineTo(hdc, start_x + 2 * radius, start_y + radius);
+			int degree = 30;
+			double angle = -degree * M_PI / 180;
+			LineTo(hdc, (start_x + radius) + radius * cos(angle), (start_y + radius) + radius * sin(angle));
 
 			DeleteObject(hBrush);
 			DeleteObject(hPen);
